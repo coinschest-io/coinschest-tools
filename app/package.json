@@ -1,0 +1,22 @@
+{
+    "name": "coinschest-tools",
+    "version": "1.0.0",
+    "private": false,
+    "license": "MIT",
+    "type": "module",
+    "description": "Открытый дешифратор монет CoinsChest: BIP-38 (EC-multiply), офлайн-файл, тесты на официальных векторах.",
+    "scripts": {
+        "build:offline": "node scripts/build-offline.mjs",
+        "test": "node scripts/bip38-vectors.mjs",
+        "test:bip38": "node scripts/bip38-vectors.mjs"
+    },
+    "dependencies": {
+        "@noble/ciphers": "^2.4.0",
+        "@noble/curves": "^2.4.0",
+        "@noble/hashes": "^2.4.0",
+        "qrcode": "^1.5.4"
+    },
+    "devDependencies": {
+        "esbuild": "0.25.12"
+    }
+}

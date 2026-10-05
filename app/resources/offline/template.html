@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'none'; connect-src 'none'; form-action 'none'; base-uri 'none'" />
+<title>CoinsChest — фраза, проверка и ключ без интернета</title>
+<style>
+:root { color-scheme: dark; --bg:#0d0c0b; --txt:#ece7df; --dim:#a49c90; --dim2:#6f675d; --line:#2a2723; --brass:#d6a952; --brass-hi:#f6dca4; --ok:#7fbf6a; --bad:#d1614f; }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--txt); font:16px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+.wrap { max-width: 760px; margin:0 auto; padding: 40px 22px 80px; }
+h1 { font-size: clamp(24px,4vw,34px); font-weight:300; letter-spacing:-.02em; margin:0 0 6px; }
+.sub { color:var(--dim); margin:0 0 28px; }
+.selftest { display:inline-block; padding:9px 14px; border:1px solid var(--line); font:12px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing:.08em; text-transform:uppercase; margin-bottom:28px; }
+.selftest.ok { color:var(--ok); border-color:#2f4a28; background:rgba(127,191,106,.08); }
+.selftest.bad { color:var(--bad); border-color:#4a2723; background:rgba(209,97,79,.1); }
+label { display:block; margin:18px 0 8px; font-size:13.5px; color:var(--dim2); }
+input { width:100%; padding:13px 15px; background:#141210; border:1px solid var(--line); color:var(--txt); font:14px ui-monospace, SFMono-Regular, Menlo, monospace; }
+input:focus { outline:none; border-color:var(--brass); }
+button { margin-top:22px; padding:13px 26px; background:var(--brass); border:0; color:#17140f; font:14px/1 inherit; cursor:pointer; letter-spacing:.02em; }
+button:disabled { opacity:.4; cursor:not-allowed; }
+button:hover:not(:disabled) { background:var(--brass-hi); }
+.result { margin-top:30px; padding:22px 24px; border:1px solid var(--line); background:#131110; }
+.result.ok { border-color:#2f4a28; }
+.result.bad { border-color:#4a2723; }
+.result.key { border-color:var(--brass); background:rgba(214,169,82,.07); }
+.result.warn { border-color:#4a4023; }
+.result code { display:block; margin:12px 0; padding:12px 14px; background:#0a0908; border:1px solid var(--line); font:13px ui-monospace, SFMono-Regular, Menlo, monospace; color:var(--brass-hi); word-break:break-all; }
+.result p { margin:12px 0 0; color:var(--dim); font-size:14.5px; }
+.warn-text { color:var(--brass-hi) !important; }
+.note { margin-top:40px; padding-top:24px; border-top:1px solid var(--line); color:var(--dim2); font-size:14px; }
+.note b { color:var(--dim); font-weight:500; }
+.tabs { display:flex; gap:0; margin:0 0 30px; border-bottom:1px solid var(--line); }
+.tabs button { margin:0; background:none; color:var(--dim); padding:12px 18px; border-bottom:2px solid transparent; }
+.tabs button:hover:not(:disabled) { background:none; color:var(--txt); }
+.tabs button.on { color:var(--brass-hi); border-bottom-color:var(--brass); }
+.step { display:inline-block; font:11px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing:.14em; text-transform:uppercase; color:var(--brass); }
+h2 { font-size:22px; font-weight:400; margin:10px 0 0; }
+p { color:var(--dim); }
+ul.before { color:var(--txt); padding-left:20px; }
+.words { list-style:none; padding:0; margin:22px 0 0; display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; }
+.words li { border:1px solid #5c4720; background:#141210; padding:12px 14px; font:18px ui-monospace, SFMono-Regular, Menlo, monospace; color:var(--brass-hi); }
+.words li small { color:var(--brass); font-size:11px; margin-right:10px; }
+.row { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+.row button { margin-top:18px; }
+button.ghost { background:none; border:1px solid var(--line); color:var(--txt); }
+button.ghost:hover:not(:disabled) { background:none; border-color:var(--brass); color:var(--brass-hi); }
+.check { display:flex; gap:10px; align-items:flex-start; margin:22px 0 0; color:var(--txt); font-size:15px; }
+.check input { width:auto; margin-top:5px; accent-color:var(--brass); }
+.marks { list-style:none; padding:0; margin:12px 0 0; display:flex; flex-wrap:wrap; gap:8px; }
+.marks li { border:1px solid var(--line); padding:5px 10px; font:13px ui-monospace, SFMono-Regular, Menlo, monospace; color:var(--dim2); }
+.marks li.ok { color:var(--ok); border-color:#2f4a28; }
+.marks li.bad { color:var(--bad); border-color:#4a2723; }
+.bigcode { display:block; margin:16px 0; padding:14px; background:#0a0908; border:1px solid var(--brass); font:14px ui-monospace, SFMono-Regular, Menlo, monospace; color:var(--brass-hi); word-break:break-all; }
+.print-sheet { display:none; }
+details summary { cursor:pointer; color:var(--dim2); font-size:13px; margin-top:12px; }
+#k-legacy { font-size:13px; color:var(--dim2); }
+.qrbox { margin-top:18px; width:230px; background:#fff; padding:6px; }
+.qrbox svg { display:block; width:100%; height:auto; }
+ol.how { color:var(--dim); padding-left:20px; margin:10px 0 0; font-size:14.5px; }
+ol.how li { margin:6px 0; }
+@media print {
+  body * { visibility:hidden !important; }
+  .print-sheet, .print-sheet * { visibility:visible !important; color:#000 !important; }
+  .print-sheet { display:block !important; position:absolute; top:0; left:0; padding:20mm; font:16pt/1.9 'Courier New', monospace; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>CoinsChest без интернета</h1>
+  <p class="sub">Этот файл ничего никуда не отправляет. Отключите сеть — всё работает по-прежнему.</p>
+
+  <div id="selftest" class="selftest">Самопроверка…</div>
+
+  <div class="tabs">
+    <button type="button" id="tab-make" class="on">Создать фразу</button>
+    <button type="button" id="tab-check">Проверить монету</button>
+    <button type="button" id="tab-key">Собрать ключ</button>
+  </div>
+
+  <!-- ── создать фразу ─────────────────────────────────────────────── -->
+  <section id="make">
+    <div id="m-intro">
+      <span class="step">Шаг 1 из 4</span>
+      <h2>Создайте секретную фразу</h2>
+      <p>Появятся шесть слов — из них родится адрес вашей монеты. Их будете знать только вы.</p>
+      <ul class="before">
+        <li>Приготовьте ручку и бумагу — лучше записать слова от руки.</li>
+        <li>Убедитесь, что экран никто не видит.</li>
+        <li>Потеряете фразу — доступ к деньгам на монете пропадёт навсегда. Восстановить её не сможет никто.</li>
+      </ul>
+      <label for="m-extra">Своя случайность — необязательно: стук по клавиатуре, броски кубика</label>
+      <input id="m-extra" type="text" autocomplete="off" spellcheck="false" />
+      <button type="button" id="m-go" disabled>Показать фразу</button>
+    </div>
+
+    <div id="m-show" hidden>
+      <span class="step">Шаг 2 из 4</span>
+      <h2>Запишите эти слова</h2>
+      <p>По порядку, латиницей, как написано.</p>
+      <ol class="words" id="m-words"></ol>
+      <div class="row">
+        <button type="button" class="ghost" id="m-save">Сохранить в файл</button>
+        <button type="button" class="ghost" id="m-print">Распечатать</button>
+        <button type="button" class="ghost" id="m-again">Другая фраза</button>
+      </div>
+      <p>Файл лучше сохранить на флешку. Папки «Документы» и «Рабочий стол» часто сами копируются в облако — туда фразе нельзя. Не фотографируйте её.</p>
+      <label class="check"><input type="checkbox" id="m-saved" /> <span>Я записал(а) слова и знаю, где они лежат</span></label>
+      <button type="button" id="m-next" disabled>Дальше — проверить запись</button>
+    </div>
+
+    <div id="m-confirm" hidden>
+      <span class="step">Шаг 3 из 4</span>
+      <h2>Введите фразу по своей записи</h2>
+      <p>Слова скрыты: наберите их с бумаги. Так проверим, что запись верна.</p>
+      <input id="m-typed" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" />
+      <ol class="marks" id="m-marks"></ol>
+      <div class="row">
+        <button type="button" id="m-make" disabled>Всё верно — показать код заказа</button>
+        <button type="button" class="ghost" id="m-back">Посмотреть фразу ещё раз</button>
+      </div>
+    </div>
+
+    <div id="m-done" hidden>
+      <span class="step">Шаг 4 из 4</span>
+      <h2>Код заказа</h2>
+      <p id="m-wait">Считаем — это занимает несколько секунд…</p>
+      <div id="m-result" hidden>
+        <p>Включите интернет, откройте страницу своего заказа и вставьте этот код по ссылке «Уже создали фразу в файле? Вставьте код заказа». Код можно переписать или скопировать — например, перенести на флешке или набрать вручную — из него фразу не получить.</p>
+        <code class="bigcode" id="m-code"></code>
+        <div class="row"><button type="button" class="ghost" id="m-copy">Скопировать код</button></div>
+        <p>После этого закройте файл. Фраза нигде не сохранилась — только в вашей записи.</p>
+      </div>
+    </div>
+
+    <div class="print-sheet" id="m-sheet"></div>
+  </section>
+
+  <!-- ── проверить монету ──────────────────────────────────────────── -->
+  <section id="check" hidden>
+    <label for="phrase">Ваша фраза</label>
+    <input id="phrase" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="шесть слов через пробел" />
+
+    <label for="code">Строка с монеты или код заказа</label>
+    <input id="code" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="6P… или passphrase…" />
+
+    <button id="go" type="button" disabled>Проверить</button>
+
+    <div id="result" class="result" hidden></div>
+
+    <div class="note">
+      <p><b>Строка с монеты</b> — 58 знаков группами по 5, начинается с 6P; пробелы можно не набирать. В ответ появится адрес: сверьте его с выгравированным на монете. Это главная проверка.</p>
+      <p><b>Код заказа</b> начинается со слова passphrase — он был на экране, когда вы создавали фразу. Ответ «совпадает» означает, что слова переписаны на карточку без ошибок.</p>
+    </div>
+  </section>
+
+  <!-- ── собрать приватный ключ ─────────────────────────────────────── -->
+  <section id="key" hidden>
+    <h2>Собрать приватный ключ</h2>
+    <p>Фраза и строка с монеты вместе дают приватный ключ от адреса — чтобы потратить средства или перенести их в свой кошелёк. Делайте это с отключённым интернетом.</p>
+
+    <label for="k-phrase">Ваша фраза</label>
+    <input id="k-phrase" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="шесть слов через пробел" />
+
+    <label for="k-code">Строка с плашки монеты</label>
+    <input id="k-code" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="6P… — 58 знаков, пробелы можно не набирать" />
+
+    <button id="k-go" type="button" disabled>Собрать ключ</button>
+
+    <div id="k-result" class="result" hidden></div>
+
+    <div id="k-addr" class="result ok" hidden>
+      <span class="step">1 · Адрес монеты</span>
+      <code id="k-address"></code>
+      <p id="k-legacy"></p>
+      <p>Сверьте его с выгравированным на монете — символ в символ. Совпал — фраза и строка верны, и ключ откроет именно этот адрес.</p>
+      <label class="check"><input type="checkbox" id="k-checked" /> <span>Адрес совпадает с гравировкой на монете</span></label>
+      <button type="button" id="k-reveal" disabled>Показать приватный ключ</button>
+    </div>
+
+    <div id="k-key" class="result key" hidden>
+      <span class="step">2 · Приватный ключ</span>
+      <code id="k-wif"></code>
+      <p id="k-kind"></p>
+      <p class="warn-text">Это ключ от ваших денег: кто его увидит, тот заберёт средства. Не фотографируйте экран и не пересылайте ключ.</p>
+      <div class="row">
+        <button type="button" class="ghost" id="k-copy">Скопировать ключ</button>
+        <button type="button" class="ghost" id="k-qr-btn">Показать QR ключа</button>
+        <button type="button" class="ghost" id="k-wipe">Скрыть и стереть всё</button>
+      </div>
+      <div id="k-qr" class="qrbox" hidden></div>
+
+      <span class="step" style="display:block;margin-top:26px">3 · Как перевести средства</span>
+      <ol class="how">
+        <li>В кошельке, куда переводите, найдите «вывести по приватному ключу» — sweep. В Electrum: «Кошелёк» → «Приватные ключи» → «Sweep».</li>
+        <li>Вставьте ключ или отсканируйте QR телефоном. Кошелёк найдёт баланс монеты.</li>
+        <li>Подтвердите перевод. Уходит весь баланс сразу.</li>
+        <li>Закройте файл и очистите буфер обмена. Монету больше не пополняйте.</li>
+      </ol>
+    </div>
+
+    <div class="note">
+      <p><b>«Вывести по ключу», а не «импорт».</b> Импорт оставляет средства на адресе монеты, а ключ — на устройстве. Вывод по ключу сразу переводит весь баланс на новый адрес вашего кошелька.</p>
+      <p><b>Нужно только проверить монету</b> — ключ собирать не нужно, хватит вкладки «Проверить монету».</p>
+    </div>
+  </section>
+
+  <div class="note">
+    <p><b>Фразу не присылайте никому</b>, включая CoinsChest. Мы её не знаем и никогда не спрашиваем.</p>
+    <p>Сборка: __BUILD__</p>
+  </div>
+</div>
+<script>__SCRIPT__</script>
+</body>
+</html>

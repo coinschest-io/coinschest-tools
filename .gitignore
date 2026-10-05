@@ -1,0 +1,3 @@
+# сборочный вывод и зависимости живут только локально
+app/node_modules/
+app/public/downloads/
