@@ -9,7 +9,7 @@
 если coinschest.io однажды исчезнет, монета остаётся рабочей. Здесь лежит всё,
 что для этого нужно.
 
-- Зеркала: **github.com/coinschest-io** · **codeberg.org/coinschest-io**
+- Зеркала: **github.com/coinschest-io/coinschest-tools** · **codeberg.org/coinschest-io/coinschest-tools**
 - Лицензия: **MIT** (см. `LICENSE`)
 - Криптография не наша: это BIP-38, опубликованный в 2011 году. Копия текста
   стандарта — `docs/crypto/BIP-0038.mediawiki` (public domain).
