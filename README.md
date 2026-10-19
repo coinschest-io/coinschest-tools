@@ -36,12 +36,13 @@
 
 Собирать ничего не нужно: офлайн-файл — это одна HTML-страница.
 
-1. Откройте раздел **Releases** зеркала и скачайте из последнего выпуска
-   файл `coinschest-offline.html`:
-   - GitHub: <https://github.com/coinschest-io/coinschest-tools/releases/latest>
-   - Codeberg: <https://codeberg.org/coinschest-io/coinschest-tools/releases>
+1. Скачайте файл — ссылка сразу начинает загрузку:
 
-   Тот же файл лежит на сайте: <https://coinschest.io/open>.
+   - **[⬇ coinschest-offline.html — GitHub](https://github.com/coinschest-io/coinschest-tools/releases/latest/download/coinschest-offline.html)**
+   - [⬇ coinschest-offline.html — Codeberg](https://codeberg.org/coinschest-io/coinschest-tools/releases/download/v1.0.0/coinschest-offline.html)
+   - или на сайте: <https://coinschest.io/open>
+
+   Все выпуски и файлы отпечатков: [Releases на GitHub](https://github.com/coinschest-io/coinschest-tools/releases).
 2. Сверьте отпечаток файла с эталоном (см. «Отпечаток» ниже).
 3. Отключите интернет и откройте файл двойным щелчком — в любом современном
    браузере. Файл создаёт фразу, проверяет монету и выдаёт приватный ключ,
