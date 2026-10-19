@@ -1,0 +1,36 @@
+# Выпуск: на тег vX.Y.Z собирает офлайн-файл, сверяет его с эталоном из
+# app/resources/offline/release.json и прикладывает к релизу вместе с SHA256SUMS.
+# Не совпал отпечаток — релиз не создаётся.
+name: release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm test
+      - run: npm run build:offline
+      - run: sha256sum coinschest-offline.html > SHA256SUMS.txt
+        working-directory: app/public/downloads
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            app/public/downloads/coinschest-offline.html
+            app/public/downloads/SHA256SUMS.txt
+          body: |
+            Офлайн-файл CoinsChest. Скачайте `coinschest-offline.html`, сверьте sha256
+            с `SHA256SUMS.txt` и с coinschest.io/open, отключите интернет и откройте двойным щелчком.
