@@ -39,10 +39,15 @@
 1. Скачайте файл — ссылка сразу начинает загрузку:
 
    - **[⬇ coinschest-offline.html — GitHub](https://github.com/coinschest-io/coinschest-tools/releases/latest/download/coinschest-offline.html)**
-   - [⬇ coinschest-offline.html — Codeberg](https://codeberg.org/coinschest-io/coinschest-tools/releases/download/v1.0.0/coinschest-offline.html)
+   - [⬇ coinschest-offline-1.0.0.zip — Codeberg](https://codeberg.org/coinschest-io/coinschest-tools/releases/download/v1.0.0/coinschest-offline-1.0.0.zip)
+     — архив: внутри тот же `coinschest-offline.html` и `SHA256SUMS.txt`.
+     Распакуйте и сверяйте отпечаток у HTML-файла.
    - или на сайте: <https://coinschest.io/open>
 
    Все выпуски и файлы отпечатков: [Releases на GitHub](https://github.com/coinschest-io/coinschest-tools/releases).
+
+   Если вместо скачивания браузер открыл страницу с кодом, нажмите на ссылку
+   правой кнопкой → «Сохранить ссылку как…».
 2. Сверьте отпечаток файла с эталоном (см. «Отпечаток» ниже).
 3. Отключите интернет и откройте файл двойным щелчком — в любом современном
    браузере. Файл создаёт фразу, проверяет монету и выдаёт приватный ключ,

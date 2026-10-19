@@ -32,8 +32,12 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build:offline
-      - run: sha256sum coinschest-offline.html > SHA256SUMS.txt
+      - run: |
+          sha256sum coinschest-offline.html > SHA256SUMS.txt
+          zip -X "coinschest-offline-${TAG#v}.zip" coinschest-offline.html SHA256SUMS.txt
         working-directory: app/public/downloads
+        env:
+          TAG: ${{ inputs.tag || github.ref_name }}
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.tag || github.ref_name }}
@@ -41,6 +45,7 @@ jobs:
           files: |
             app/public/downloads/coinschest-offline.html
             app/public/downloads/SHA256SUMS.txt
+            app/public/downloads/coinschest-offline-*.zip
           body: |
             Офлайн-файл CoinsChest. Скачайте `coinschest-offline.html`, сверьте sha256
             с `SHA256SUMS.txt` и с coinschest.io/open, отключите интернет и откройте двойным щелчком.
