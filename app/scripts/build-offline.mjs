@@ -41,7 +41,7 @@ const script = execFileSync(
         '--target=es2020',
         '--legal-comments=none',
     ],
-    { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 }
+    { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024, cwd: root }
 );
 
 if (/\b(fetch|XMLHttpRequest|WebSocket|importScripts)\s*\(/.test(script)) {
