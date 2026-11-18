@@ -122,13 +122,15 @@ export function phrasesMatch(expected, typed) {
  * раздел 5.
  */
 export function noteText(phrase, orderNumber = '') {
-    const words = cleanPhrase(phrase).split(' ');
+    // BIP-38 чувствителен к регистру: не нормализуем пользовательскую фразу
+    // через cleanPhrase, который переводит её в нижний регистр.
+    const words = String(phrase).normalize('NFC').trim().replace(/\s+/g, ' ').split(' ');
     const lines = [
         orderNumber ? `Заметка к заказу ${orderNumber}` : 'Заметка',
         '',
         ...words.map((w, i) => `${i + 1}. ${w}`),
         '',
-        'Слова пишутся латиницей, строчными, через один пробел.',
+        'Сохраните порядок, написание и регистр фразы точно.',
         'Перепишите их на бумагу и храните отдельно от монеты.',
         'Никому не показывайте и не пересылайте — никто, включая продавца, их не спрашивает.',
         '',

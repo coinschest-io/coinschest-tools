@@ -14,7 +14,7 @@
  */
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -26,8 +26,14 @@ mkdirSync(out, { recursive: true });
 // Всё в один файл: iife, без внешних импортов, без карт исходников. Сборка
 // идёт в stdout и нигде на диске не оседает — временный файл пришлось бы
 // удалять, а лишний артефакт рядом с исходниками никому не нужен.
+const esbuildCandidates = [process.arch, ...(process.platform === 'darwin' ? ['arm64', 'x64'] : [])]
+    .map((arch) => resolve(
+        root,
+        `node_modules/@esbuild/${process.platform}-${arch}/bin/esbuild${process.platform === 'win32' ? '.exe' : ''}`
+    ));
+const esbuild = esbuildCandidates.find((candidate) => existsSync(candidate)) ?? resolve(root, 'node_modules/.bin/esbuild');
 const script = execFileSync(
-    resolve(root, 'node_modules/.bin/esbuild'),
+    esbuild,
     [
         resolve(root, 'resources/offline/app.js'),
         '--bundle',

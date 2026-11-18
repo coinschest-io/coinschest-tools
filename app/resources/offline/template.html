@@ -48,6 +48,12 @@ button.ghost { background:none; border:1px solid var(--line); color:var(--txt); 
 button.ghost:hover:not(:disabled) { background:none; border-color:var(--brass); color:var(--brass-hi); }
 .check { display:flex; gap:10px; align-items:flex-start; margin:22px 0 0; color:var(--txt); font-size:15px; }
 .check input { width:auto; margin-top:5px; accent-color:var(--brass); }
+.mode-pick { display:flex; flex-wrap:wrap; gap:10px; margin-top:24px; }
+.mode-pick button { display:flex; flex-direction:column; align-items:flex-start; gap:3px; background:#141210; border:1px solid var(--line); color:var(--txt); }
+.mode-pick button.selected { border-color:var(--brass); background:rgba(214,169,82,.1); }
+.mode-pick small { color:var(--brass-hi); font-size:11px; }
+#m-custom { width:100%; margin-top:8px; padding:13px 15px; background:#141210; border:1px solid var(--line); color:var(--txt); font:15px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; }
+#m-custom:focus { outline:none; border-color:var(--brass); }
 .marks { list-style:none; padding:0; margin:12px 0 0; display:flex; flex-wrap:wrap; gap:8px; }
 .marks li { border:1px solid var(--line); padding:5px 10px; font:13px ui-monospace, SFMono-Regular, Menlo, monospace; color:var(--dim2); }
 .marks li.ok { color:var(--ok); border-color:#2f4a28; }
@@ -91,15 +97,29 @@ ol.how li { margin:6px 0; }
         <li>Убедитесь, что экран никто не видит.</li>
         <li>Потеряете фразу — доступ к деньгам на монете пропадёт навсегда. Восстановить её не сможет никто.</li>
       </ul>
-      <label for="m-extra">Своя случайность — необязательно: стук по клавиатуре, броски кубика</label>
-      <input id="m-extra" type="text" autocomplete="off" spellcheck="false" />
-      <button type="button" id="m-go" disabled>Показать фразу</button>
+      <div class="mode-pick" role="group" aria-label="Способ создания фразы">
+        <button type="button" id="m-mode-random" class="selected">Случайные слова <small>рекомендуем</small></button>
+        <button type="button" id="m-mode-custom">Своя фраза</button>
+      </div>
+      <div id="m-custom-panel" hidden>
+        <div class="result warn"><b>Важно:</b> фразу, придуманную человеком, часто можно угадать или подобрать. Не используйте цитаты, имена, даты, известные выражения и пароли от других сервисов. Для защиты подходят как минимум шесть случайных, не связанных между собой слов. Регистр и порядок имеют значение.</div>
+        <label for="m-custom">Придумайте и запишите свою фразу</label>
+        <textarea id="m-custom" rows="3" maxlength="512" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Не менее шести слов"></textarea>
+        <label class="check"><input type="checkbox" id="m-custom-risk" /> <span>Понимаю: слабую фразу могут подобрать, и тогда средства будут доступны постороннему.</span></label>
+        <p id="m-custom-error" class="warn-text" hidden></p>
+        <button type="button" id="m-custom-go">Продолжить со своей фразой</button>
+      </div>
+      <div id="m-random-panel">
+        <label for="m-extra">Своя случайность — необязательно: стук по клавиатуре, броски кубика</label>
+        <input id="m-extra" type="text" autocomplete="off" spellcheck="false" />
+        <button type="button" id="m-go" disabled>Показать фразу</button>
+      </div>
     </div>
 
     <div id="m-show" hidden>
       <span class="step">Шаг 2 из 4</span>
-      <h2>Запишите эти слова</h2>
-      <p>По порядку, латиницей, как написано.</p>
+      <h2 id="m-show-title">Запишите эти слова</h2>
+      <p id="m-show-copy">По порядку, латиницей, как написано.</p>
       <ol class="words" id="m-words"></ol>
       <div class="row">
         <button type="button" class="ghost" id="m-save">Сохранить в файл</button>
@@ -114,7 +134,7 @@ ol.how li { margin:6px 0; }
     <div id="m-confirm" hidden>
       <span class="step">Шаг 3 из 4</span>
       <h2>Введите фразу по своей записи</h2>
-      <p>Слова скрыты: наберите их с бумаги. Так проверим, что запись верна.</p>
+      <p id="m-confirm-copy">Слова скрыты: наберите их с бумаги. Так проверим, что запись верна.</p>
       <input id="m-typed" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" />
       <ol class="marks" id="m-marks"></ol>
       <div class="row">

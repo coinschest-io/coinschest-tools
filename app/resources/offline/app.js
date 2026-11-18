@@ -12,7 +12,7 @@
  *   — самопроверка на официальных векторах при каждом открытии;
  *   — приватный ключ показывается только по отдельному нажатию.
  */
-import { checkOrderCode, decryptKey, makeOrderCode } from '../js/lib/bip38.js';
+import { checkOrderCode, decryptKey, makeOrderCode, normalizePhrase } from '../js/lib/bip38.js';
 import { compareWords, generatePhrase, noteFileName, noteText, phrasesMatch } from '../js/lib/phrase.js';
 import QRCode from 'qrcode';
 import vectors from '../../../docs/crypto/bip38-ec-multiply-vectors.json' with { type: 'json' };
@@ -113,6 +113,11 @@ function reveal() {
 /* --- создать фразу ------------------------------------------------- */
 
 let phrase = '';
+let customPhrase = false;
+
+const matchesMakerPhrase = (typed) => customPhrase
+    ? normalizePhrase(phrase) === normalizePhrase(typed) && normalizePhrase(typed) !== ''
+    : phrasesMatch(phrase, typed);
 
 const panes = ['m-intro', 'm-show', 'm-confirm', 'm-done'];
 const pane = (id) => panes.forEach((p) => ($(p).hidden = p !== id));
@@ -127,6 +132,14 @@ function renderWords() {
         li.append(n, document.createTextNode(w));
         list.append(li);
     });
+    $('m-show-title').textContent = customPhrase ? 'Сохраните свою фразу' : 'Запишите эти слова';
+    $('m-show-copy').textContent = customPhrase
+        ? 'Сохраните фразу точно: важны регистр, написание и порядок слов.'
+        : 'По порядку, латиницей, как написано.';
+    $('m-confirm-copy').textContent = customPhrase
+        ? 'Фраза скрыта: наберите её с бумаги. Регистр и порядок должны совпасть точно.'
+        : 'Слова скрыты: наберите их с бумаги. Так проверим, что запись верна.';
+    $('m-again').textContent = customPhrase ? 'Изменить свою фразу' : 'Другая фраза';
 
     const sheet = $('m-sheet');
     sheet.textContent = '';
@@ -143,7 +156,35 @@ function renderWords() {
 
 function newPhrase() {
     // Всегда шесть слов: карточка изделия рассчитана ровно на шесть.
+    customPhrase = false;
     phrase = generatePhrase(6, $('m-extra').value);
+    $('m-saved').checked = false;
+    $('m-next').disabled = true;
+    renderWords();
+    pane('m-show');
+}
+
+function newCustomPhrase() {
+    const error = $('m-custom-error');
+    error.hidden = true;
+    const value = normalizePhrase($('m-custom').value);
+    if (value.length < 24 || value.split(' ').length < 6) {
+        error.textContent = 'Для своей фразы используйте не меньше шести слов и 24 символов.';
+        error.hidden = false;
+        return;
+    }
+    if (value.length > 512) {
+        error.textContent = 'Фраза не должна быть длиннее 512 символов.';
+        error.hidden = false;
+        return;
+    }
+    if (!$('m-custom-risk').checked) {
+        error.textContent = 'Подтвердите, что понимаете риск слабой или угадываемой фразы.';
+        error.hidden = false;
+        return;
+    }
+    customPhrase = true;
+    phrase = value;
     $('m-saved').checked = false;
     $('m-next').disabled = true;
     renderWords();
@@ -165,17 +206,21 @@ function renderMarks() {
     const typed = $('m-typed').value;
     const list = $('m-marks');
     list.textContent = '';
-    compareWords(phrase, typed).forEach((m, i) => {
+    const entered = normalizePhrase(typed).split(' ').filter(Boolean);
+    const marks = customPhrase
+        ? phrase.split(' ').map((word, i) => ({ state: entered[i] === word ? 'ok' : entered[i] === undefined ? 'wait' : 'bad', word: entered[i] || '' }))
+        : compareWords(phrase, typed);
+    marks.forEach((m, i) => {
         const li = document.createElement('li');
         li.className = m.state;
         li.textContent = `${i + 1}. ${m.word || '…'}` + (m.state === 'bad' && m.hint ? ` — похоже на «${m.hint}»` : '');
         list.append(li);
     });
-    $('m-make').disabled = !phrasesMatch(phrase, typed);
+    $('m-make').disabled = !matchesMakerPhrase(typed);
 }
 
 function makeCode() {
-    if (!phrasesMatch(phrase, $('m-typed').value)) return;
+    if (!matchesMakerPhrase($('m-typed').value)) return;
     pane('m-done');
     $('m-wait').hidden = false;
     $('m-result').hidden = true;
@@ -194,8 +239,34 @@ function makeCode() {
 
 function setupMaker(ok) {
     $('m-go').disabled = !ok;
+    $('m-custom-go').disabled = !ok;
     $('m-go').addEventListener('click', newPhrase);
-    $('m-again').addEventListener('click', newPhrase);
+    $('m-again').addEventListener('click', () => {
+        if (customPhrase) {
+            $('m-custom').value = phrase;
+            phrase = '';
+            customPhrase = false;
+            $('m-custom-risk').checked = true;
+            $('m-random-panel').hidden = true;
+            $('m-custom-panel').hidden = false;
+            pane('m-intro');
+        } else {
+            newPhrase();
+        }
+    });
+    $('m-mode-random').addEventListener('click', () => {
+        $('m-mode-random').classList.add('selected');
+        $('m-mode-custom').classList.remove('selected');
+        $('m-random-panel').hidden = false;
+        $('m-custom-panel').hidden = true;
+    });
+    $('m-mode-custom').addEventListener('click', () => {
+        $('m-mode-custom').classList.add('selected');
+        $('m-mode-random').classList.remove('selected');
+        $('m-random-panel').hidden = true;
+        $('m-custom-panel').hidden = false;
+    });
+    $('m-custom-go').addEventListener('click', newCustomPhrase);
     $('m-save').addEventListener('click', saveNote);
     $('m-print').addEventListener('click', () => window.print());
     $('m-saved').addEventListener('change', (e) => ($('m-next').disabled = !e.target.checked));

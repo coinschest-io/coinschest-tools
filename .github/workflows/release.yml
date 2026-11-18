@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Тег выпуска, например v1.0.0'
+        description: 'Тег выпуска, например v1.0.1'
         required: true
 
 permissions:
